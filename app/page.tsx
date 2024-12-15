@@ -8,7 +8,7 @@ export default function Home() {
       <section className="remove-scrollbar container my-auto">
         <div className="sub-container max-w-[495px]">
           <Image 
-            src="assets/icons/logo-full.svg"
+            src="assets/icons/pulse-point-logo.svg"
             height={1000}
             width={1000}
             alt="PulsePoint"
