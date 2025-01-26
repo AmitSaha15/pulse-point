@@ -8,7 +8,7 @@ export default function Home() {
       <section className="remove-scrollbar container my-auto">
         <div className="sub-container max-w-[495px]">
           <Image 
-            src="assets/icons/pulse-point-logo.svg"
+            src="/assets/icons/pulse-point-logo.svg"
             height={1000}
             width={1000}
             alt="PulsePoint"
@@ -19,7 +19,7 @@ export default function Home() {
 
           <div className="text-14-regular mt-20 flex justify-between">
             <p className="justify-items-end text-dark-600 xl:text-left">
-              © 2024 PulsePoint
+              © 2025 PulsePoint
             </p>
             <Link href="/?admin=true" className="text-green-500">
               Admin
