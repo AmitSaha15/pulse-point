@@ -13,8 +13,10 @@ import { useRouter } from "next/navigation"
 import { createUser } from "@/lib/actions/patient.actions"
 import { FormFieldTypes } from "./PatientForm"
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group"
-import { GenderOptions } from "@/constants"
+import { Doctors, GenderOptions } from "@/constants"
 import { Label } from "../ui/label"
+import { SelectItem } from "../ui/select"
+import Image from "next/image"
 
 
  
@@ -176,7 +178,78 @@ const RegisterForm = ({user} : {user : User}) => {
           name = "primaryPhysician"
           label = "Primary Physician"
           placeholder = "Select a physician"
-        />
+        >
+          {Doctors.map((doctor) => {
+            return (
+              <SelectItem key={doctor.name} value={doctor.name}>
+                <div className="flex items-center gap-2 cursor-pointer">
+                  <Image 
+                    src={doctor.image}
+                    width={32}
+                    height={32}
+                    alt={doctor.name}
+                    className="rounded-full border border-dark-500"
+                  />
+                  <p>{doctor.name}</p>
+                </div>
+              </SelectItem>
+            )
+          })}
+        </CustomFormField>
+
+        <div className="flex flex-col gap-6 xl:flex-row">
+          <CustomFormField 
+            fieldType = {FormFieldTypes.INPUT}
+            control = {form.control}
+            name = "insuranceProvider"
+            label = "Insurance Provider"
+            placeholder = "Star Health Insurance"
+          />
+
+          <CustomFormField 
+            fieldType = {FormFieldTypes.INPUT}
+            control = {form.control}
+            name = "insurancePolicyNumber"
+            label = "Insurance Policy Number"
+            placeholder = "SHI123456789"
+          />
+        </div>
+
+        <div className="flex flex-col gap-6 xl:flex-row">
+          <CustomFormField 
+            fieldType = {FormFieldTypes.TEXTAREA}
+            control = {form.control}
+            name = "allergies"
+            label = "Allergies (If Any)"
+            placeholder = "Peanuts, Pollen, Ibuprofen etc."
+          />
+
+          <CustomFormField 
+            fieldType = {FormFieldTypes.TEXTAREA}
+            control = {form.control}
+            name = "currentMedication"
+            label = "Current Medication (If Any)"
+            placeholder = "Paracetamol 500mg, Omeprazole 20mg etc."
+          />
+        </div>
+
+        <div className="flex flex-col gap-6 xl:flex-row">
+          <CustomFormField 
+            fieldType = {FormFieldTypes.TEXTAREA}
+            control = {form.control}
+            name = "familyMedicalHistory"
+            label = "Family Medical History"
+            placeholder = "Father had heart disease"
+          />
+
+          <CustomFormField 
+            fieldType = {FormFieldTypes.TEXTAREA}
+            control = {form.control}
+            name = "pastMedicalHistory"
+            label = "Past Medical History"
+            placeholder = "Appendectomy, Tonsillectomy etc."
+          />
+        </div>
 
         <SubmitButton isLoading={isLoading}>Get Started</SubmitButton>
       </form>
