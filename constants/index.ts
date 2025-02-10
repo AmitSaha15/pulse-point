@@ -38,6 +38,7 @@ export const IdentificationTypes = [
   "State ID Card",
   "Student ID Card",
   "Voter ID Card",
+  "AADHAAR Card"
 ];
 
 export const Doctors = [
