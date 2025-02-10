@@ -3,17 +3,16 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
-import { Button } from "@/components/ui/button"
 import {Form, FormControl} from "@/components/ui/form"
 import CustomFormField from "../CustomFormField"
 import SubmitButton from "../SubmitButton"
 import { useState } from "react"
-import { UserFormSchema } from "@/lib/validationSchema"
+import { PatientFormValidation } from "@/lib/validationSchema"
 import { useRouter } from "next/navigation"
-import { createUser } from "@/lib/actions/patient.actions"
+import { registerPatient } from "@/lib/actions/patient.actions"
 import { FormFieldTypes } from "./PatientForm"
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group"
-import { Doctors, GenderOptions, IdentificationTypes } from "@/constants"
+import { Doctors, GenderOptions, IdentificationTypes, PatientFormDefaultValues } from "@/constants"
 import { Label } from "../ui/label"
 import { SelectItem } from "../ui/select"
 import Image from "next/image"
@@ -26,24 +25,45 @@ const RegisterForm = ({user} : {user : User}) => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
-  const form = useForm<z.infer<typeof UserFormSchema>>({
-    resolver: zodResolver(UserFormSchema),
+  const form = useForm<z.infer<typeof PatientFormValidation>>({
+    resolver: zodResolver(PatientFormValidation),
     defaultValues: {
+      ...PatientFormDefaultValues,
       name: "",
       email: "",
       phone: "",
     },
   })
  
-  async function onSubmit({name, email, phone}: z.infer<typeof UserFormSchema>) {
+  async function onSubmit(values: z.infer<typeof PatientFormValidation>) {
     setIsLoading(true);
+
+    let formData;
+
+      // check and save the identification document file
+    if(values.identificationDocument && values.identificationDocument.length > 0){
+      const blobFile = new Blob([values.identificationDocument[0]], {
+        type: values.identificationDocument[0].type,
+      })
+
+      formData = new FormData();
+      formData.append('blobFile', blobFile)
+      formData.append('fileName', values.identificationDocument[0].name)
+    }
+
     try {
-      const userData = {name, email, phone}
+      const patientData = {
+        ...values,
+        userId: user.$id,
+        birthDate: new Date(values.birthDate),
+        identificationDocument: formData,
+      }
 
-      const user = await createUser(userData);
+      // @ts-ignore
+      const patient = await registerPatient(patientData);
 
-      if(user){
-        router.push(`/patients/${user.$id}/register`);
+      if(patient){
+        router.push(`/patients/${user.$id}/new-appointment`)
       }
 
     } catch (error) {
@@ -70,7 +90,7 @@ const RegisterForm = ({user} : {user : User}) => {
           fieldType = {FormFieldTypes.INPUT}
           control = {form.control}
           name = "name"
-          label = "Full Name"
+          label = "Full Name *"
           placeholder = "elon musk"
           iconSrc = "/assets/icons/user.svg"
           iconAlt = "user"
@@ -81,7 +101,7 @@ const RegisterForm = ({user} : {user : User}) => {
             fieldType = {FormFieldTypes.INPUT}
             control = {form.control}
             name = "email"
-            label = "Email"
+            label = "Email *"
             placeholder = "email@example.com"
             iconSrc = "/assets/icons/email.svg"
             iconAlt = "email"
@@ -91,7 +111,7 @@ const RegisterForm = ({user} : {user : User}) => {
             fieldType = {FormFieldTypes.PHONE_NUM}
             control = {form.control}
             name = "phone"
-            label = "Phone Number"
+            label = "Phone Number *"
             placeholder = "+91 9876543210"
           />
         </div>
@@ -101,14 +121,14 @@ const RegisterForm = ({user} : {user : User}) => {
             fieldType = {FormFieldTypes.DATE_PICKER}
             control = {form.control}
             name = "birthDate"
-            label = "Date of Birth"
+            label = "Date of Birth *"
           />
 
           <CustomFormField 
             fieldType = {FormFieldTypes.SKELETON}
             control = {form.control}
             name = "gender"
-            label = "Gender"
+            label = "Gender *"
             renderSkeleton={(field) => (
               <FormControl>
                 <RadioGroup className="flex h-11 gap-6 xl:justify-between" onValueChange={field.onChange} defaultValue={field.value}>
@@ -137,7 +157,7 @@ const RegisterForm = ({user} : {user : User}) => {
             fieldType = {FormFieldTypes.INPUT}
             control = {form.control}
             name = "address"
-            label = "Address"
+            label = "Address *"
             placeholder = "Vasanthnagar, Bangalore"
           />
 
@@ -145,7 +165,7 @@ const RegisterForm = ({user} : {user : User}) => {
             fieldType = {FormFieldTypes.INPUT}
             control = {form.control}
             name = "occupation"
-            label = "Occupation"
+            label = "Occupation *"
             placeholder = "Software Engineer"
           />
         </div>
@@ -155,7 +175,7 @@ const RegisterForm = ({user} : {user : User}) => {
             fieldType = {FormFieldTypes.INPUT}
             control = {form.control}
             name = "emergencyContactName"
-            label = "Emergency Contact Name"
+            label = "Emergency Contact Name *"
             placeholder = "Guardian's name"
           />
 
@@ -163,7 +183,7 @@ const RegisterForm = ({user} : {user : User}) => {
             fieldType = {FormFieldTypes.PHONE_NUM}
             control = {form.control}
             name = "emergencyContactNumber"
-            label = "Emergency Contact Number"
+            label = "Emergency Contact Number *"
             placeholder = "+91 9876543210"
           />
         </div>
@@ -178,7 +198,7 @@ const RegisterForm = ({user} : {user : User}) => {
           fieldType = {FormFieldTypes.SELECT}
           control = {form.control}
           name = "primaryPhysician"
-          label = "Primary Physician"
+          label = "Primary Physician *"
           placeholder = "Select a physician"
         >
           {Doctors.map((doctor) => {
@@ -204,7 +224,7 @@ const RegisterForm = ({user} : {user : User}) => {
             fieldType = {FormFieldTypes.INPUT}
             control = {form.control}
             name = "insuranceProvider"
-            label = "Insurance Provider"
+            label = "Insurance Provider *"
             placeholder = "Star Health Insurance"
           />
 
@@ -212,7 +232,7 @@ const RegisterForm = ({user} : {user : User}) => {
             fieldType = {FormFieldTypes.INPUT}
             control = {form.control}
             name = "insurancePolicyNumber"
-            label = "Insurance Policy Number"
+            label = "Insurance Policy Number *"
             placeholder = "SHI123456789"
           />
         </div>
@@ -292,12 +312,38 @@ const RegisterForm = ({user} : {user : User}) => {
             label = "Scanned copy of identification document"
             renderSkeleton={(field) => (
               <FormControl>
-                <FileUploader/>
+                <FileUploader files={field.value} onChange={field.onChange}/>
               </FormControl>
             )}
           />
 
-        <SubmitButton isLoading={isLoading}>Get Started</SubmitButton>
+        <section className="space-y-6">
+          <div className="mb-9 space-y-1">
+            <h2 className="sub-header">Consent and Privacy</h2>
+          </div>
+
+          <CustomFormField 
+            fieldType={FormFieldTypes.CHECKBOX}
+            control={form.control}
+            name="treatmentConsent"
+            label="I consent to receive treatment for my health condition."
+          />
+          <CustomFormField 
+            fieldType={FormFieldTypes.CHECKBOX}
+            control={form.control}
+            name="disclosureConsent"
+            label="I consent to the use and disclosure of my health information for treatment purpose."
+          />
+          <CustomFormField 
+            fieldType={FormFieldTypes.CHECKBOX}
+            control={form.control}
+            name="privacyConsent"
+            label="I acknowledge that I have reviewed and agree to the privacy policy."
+          />
+        </section>
+
+
+        <SubmitButton isLoading={isLoading}>Save and Continue</SubmitButton>
       </form>
     </Form>
   )
